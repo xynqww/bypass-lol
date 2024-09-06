@@ -1,9 +1,11 @@
 {
   "version": 2,
-  "builds": [
-    { "src": "api.py", "use": "@vercel/python" }
-  ],
+  "functions": {
+    "api/api.py": {
+      "runtime": "python3.9"  // Adjusted to match runtime.txt
+    }
+  },
   "routes": [
-    { "src": "/(.*)", "dest": "api.py" }
-  ]
-}
+    {
+      "src": "/api/fluxus",
+      "dest": "/api/api.py"
