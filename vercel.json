@@ -3,9 +3,6 @@
   "functions": {
     "api/api.py": {
       "runtime": "python3.12"
-    },
-    "api/cron.js": {
-      "runtime": "nodejs14.x"
     }
   }
 }
