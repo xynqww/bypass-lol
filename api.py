@@ -5,7 +5,8 @@ import time
 
 app = Flask(__name__)
 
-key_regex = r'let content = "([^"]+)";'
+# Updated regex pattern
+key_regex = r'let content = "([^"]+)"'
 
 def fetch(url, headers):
     try:
@@ -22,17 +23,18 @@ def bypass_link(url):
             raise Exception("Invalid HWID in URL")
 
         start_time = time.time()
+
         endpoints = [
             {
                 "url": f"https://flux.li/android/external/start.php?HWID={hwid}",
                 "referer": ""
             },
             {
-                "url": "https://flux.li/android/external/check1.php?hash={hash}",
+                "url": f"https://flux.li/android/external/check1.php?hash={hwid}",  # Ensure the hash or HWID is correct
                 "referer": "https://linkvertise.com"
             },
             {
-                "url": "https://flux.li/android/external/main.php?hash={hash}",
+                "url": f"https://flux.li/android/external/main.php?hash={hwid}",
                 "referer": "https://linkvertise.com"
             }
         ]
@@ -72,14 +74,14 @@ def home():
 @app.route("/api/fluxus")
 def bypass():
     url = request.args.get("url")
-    if url.startswith("https://flux.li/android/external/start.php?HWID="):
+    if url and url.startswith("https://flux.li/android/external/start.php?HWID="):
         try:
             content, time_taken = bypass_link(url)
             return jsonify({"key": content, "time_taken": time_taken, "credit": "FeliciaXxx"})
         except Exception as e:
             return jsonify({"error": str(e)}), 500
     else:
-        return jsonify({"message": "Please Enter Fluxus Link!"})
+        return jsonify({"message": "Please Enter a valid Fluxus Link!"})
 
 if __name__ == "__main__":
     app.run()
