@@ -46,7 +46,7 @@ def bypass_link(url):
                 'DNT': '1',
                 'Connection': 'close',
                 'Referer': referer,
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x66) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
             }
             response_text = fetch(url, headers)
             if endpoint == endpoints[-1]:
@@ -67,7 +67,7 @@ def home():
 @app.route("/api/fluxus")
 def bypass():
     url = request.args.get("url")
-    if url.startswith("https://flux.li/android/external/start.php?HWID="):
+    if url and url.startswith("https://flux.li/android/external/start.php?HWID="):
         try:
             content, time_taken = bypass_link(url)
             return jsonify({"key": content, "time_taken": time_taken, "credit": "FeliciaXxx"})
@@ -76,7 +76,6 @@ def bypass():
     else:
         return jsonify({"message": "Please Enter Fluxus Link!"})
 
-# Vercel requires this as a handler function
-def handler(request):
-    with app.request_context(request):
-        return app.full_dispatch_request()
+# Use Flask's default WSGI server for local testing
+if __name__ == "__main__":
+    app.run()
