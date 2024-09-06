@@ -78,4 +78,5 @@ def bypass():
 
 # Vercel requires this as a handler function
 def handler(request):
-    return app(request)
+    with app.request_context(request):
+        return app.full_dispatch_request()
