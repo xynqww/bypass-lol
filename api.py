@@ -5,7 +5,6 @@ import time
 
 app = Flask(__name__)
 
-# Updated regex pattern
 key_regex = r'let content = "([^"]+)"'
 
 def fetch(url, headers):
@@ -30,7 +29,7 @@ def bypass_link(url):
                 "referer": ""
             },
             {
-                "url": f"https://flux.li/android/external/check1.php?hash={hwid}",  # Ensure the hash or HWID is correct
+                "url": f"https://flux.li/android/external/check1.php?hash={hwid}",
                 "referer": "https://linkvertise.com"
             },
             {
@@ -51,8 +50,7 @@ def bypass_link(url):
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x66) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
             }
             response_text = fetch(url, headers)
-            
-            # Debug print: See the actual response content
+
             print(f"DEBUG: Response from {url}:")
             print(response_text)
 
