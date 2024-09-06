@@ -1,7 +1,7 @@
 {
   "version": 2,
   "functions": {
-    "api/xynApi.py": {
+    "api/api.py": {
       "runtime": "python3.12"
     }
   }
