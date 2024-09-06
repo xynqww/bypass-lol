@@ -5,7 +5,7 @@ import time
 
 app = Flask(__name__)
 
-key_regex = r'let content = "([^"]+)";'
+key_regex = r'let content = \"([^"]+)"\;'
 
 def fetch(url, headers):
     try:
@@ -76,6 +76,5 @@ def bypass():
     else:
         return jsonify({"message": "Please Enter Fluxus Link!"})
 
-# Use Flask's default WSGI server for local testing
 if __name__ == "__main__":
-    app.run()
+    app.run()  # No need to specify host and port for Vercel deployment
