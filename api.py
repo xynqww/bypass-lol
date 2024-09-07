@@ -49,7 +49,7 @@ def bypass_link(url):
                 'DNT': '1',
                 'Connection': 'close',
                 'Referer': referer,
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x66) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
             }
             response_text = fetch(url, headers)
             if endpoint == endpoints[-1]:
@@ -72,7 +72,7 @@ def get_paste_drop_content(url):
     if response.status_code == 200:
         return response.text
     else:
-        return None
+        raise Exception(f"Failed to get Paste Drop content. Status Code: {response.status_code}")
 
 def parse_html(html_content):
     soup = BeautifulSoup(html_content, 'html.parser')
@@ -87,9 +87,9 @@ def home():
     return jsonify({"message": "Invalid Endpoint"})
 
 @app.route("/api/fluxus")
-def bypass():
+def fluxus():
     url = request.args.get("url")
-    if url.startswith("https://flux.li/android/external/start.php?HWID="):
+    if url and url.startswith("https://flux.li/android/external/start.php?HWID="):
         try:
             content, time_taken = bypass_link(url)
             return jsonify({"key": content, "time_taken": time_taken, "credit": "FeliciaXxx"})
@@ -99,20 +99,20 @@ def bypass():
         return jsonify({"message": "Please Enter Fluxus Link!"})
 
 @app.route('/api/paste', methods=['GET'])
-def get_paste_drop_content_endpoint():
+def paste_drop():
     url = request.args.get('url')
     if not url:
         return jsonify({"status": "fail", "message": "URL parameter is missing"}), 400
 
-    html_content = get_paste_drop_content(url)
-    if html_content:
+    try:
+        html_content = get_paste_drop_content(url)
         parsed_content = parse_html(html_content)
         if parsed_content:
             return jsonify({"status": "success", "result": parsed_content}), 200
         else:
             return jsonify({"status": "fail", "message": "An Error Occurred"}), 500
-    else:
-        return jsonify({"status": "fail", "message": "Unknown Error Happened"}), 500
+    except Exception as e:
+        return jsonify({"status": "fail", "message": str(e)}), 500
 
 @app.route('/api/socialwolvez', methods=['GET'])
 def socialwolvez():
@@ -157,10 +157,11 @@ def mboost():
     
     try:
         response = requests.get(url)
+        response.raise_for_status()
         html_content = response.text
     except requests.RequestException as e:
-        return jsonify({"result": f"{str(e)}"})
-    
+        return jsonify({"result": f"Error fetching URL: {str(e)}"})
+
     targeturl_regex = r'"targeturl":\s*"(.*?)"'
     
     match = re.search(targeturl_regex, html_content, re.MULTILINE)
@@ -172,4 +173,4 @@ def mboost():
         return jsonify({"result": "Please try again later"})
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
