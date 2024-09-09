@@ -8,8 +8,5 @@
     { "src": "/supported", "dest": "api.py" },
     { "handle": "filesystem" },
     { "src": "/(.*)", "dest": "/public/index.html" }
-  ],
-  "static": {
-    "directory": "public"
-  }
+  ]
 }
