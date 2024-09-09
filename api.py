@@ -172,5 +172,11 @@ def mboost():
     else:
         return jsonify({"result": "Please try again later"})
 
+# New /supported route
+@app.route('/supported', methods=['GET'])
+def supported():
+    services = ["fluxus", "pastedrop", "socialwolvez", "mboost"]
+    return jsonify({"supported_services": services})
+
 if __name__ == '__main__':
     app.run(debug=True)
