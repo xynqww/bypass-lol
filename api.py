@@ -19,8 +19,8 @@ def fetch(url, headers):
     except requests.exceptions.RequestException as e:
         raise Exception(f"Failed to fetch URL: {url}. Error: {e}")
 
-# Function to bypass a link
-def bypass_link(url):
+# Function to bypass a Fluxus link
+def bypass_fluxus(url):
     try:
         hwid = url.split("HWID=")[-1]
         if not hwid:
@@ -63,28 +63,55 @@ def bypass_link(url):
                 else:
                     raise Exception("Failed to find content key")
     except Exception as e:
-        raise Exception(f"Failed to bypass link. Error: {e}")
+        raise Exception(f"Failed to bypass Fluxus link. Error: {e}")
 
 # Function to get Paste Drop content
-def get_paste_drop_content(url):
+def bypass_paste_drop(url):
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
         'Referer': 'https://paste-drop.com/'
     }
-    response = requests.get(url, headers=headers)
-    if response.status_code == 200:
-        return response.text
-    else:
-        raise Exception(f"Failed to get Paste Drop content. Status Code: {response.status_code}")
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.text, 'html.parser')
+        content = soup.find('span', id='content')
+        return content.get_text().replace('\\', '') if content else None
+    except Exception as e:
+        raise Exception(f"Failed to get Paste Drop content. Error: {e}")
 
-# Function to parse HTML
-def parse_html(html_content):
-    soup = BeautifulSoup(html_content, 'html.parser')
-    content = soup.find('span', id='content')
-    if content:
-        return content.get_text().replace('\\', '')
-    else:
-        return None
+# Function to bypass SocialWolvez
+def bypass_socialwolvez(url):
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+
+        soup = BeautifulSoup(response.text, 'html.parser')
+        script_tag = soup.find('script', {'id': '__NUXT_DATA__'})
+        if script_tag and script_tag.string:
+            data = json.loads(script_tag.string)
+            extracted_url = data.get(5)
+            extracted_name = data.get(6)
+
+            if extracted_url and extracted_name:
+                return extracted_url, extracted_name
+            else:
+                raise Exception("Required data not found in the JSON structure.")
+        else:
+            raise Exception("Script tag with JSON data not found.")
+    except requests.RequestException as e:
+        raise Exception(f"Failed to make request to the provided URL. Error: {e}")
+
+# Function to bypass MBoost
+def bypass_mboost(url):
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        targeturl_regex = r'"targeturl":\s*"(.*?)"'
+        match = re.search(targeturl_regex, response.text, re.MULTILINE)
+        return match.group(1) if match else None
+    except requests.RequestException as e:
+        raise Exception(f"Error fetching MBoost URL. Error: {e}")
 
 # Function to bypass MediaFire
 def bypass_mediafire(url):
@@ -93,123 +120,41 @@ def bypass_mediafire(url):
         if response.status_code == 200:
             soup = BeautifulSoup(response.text, 'html.parser')
             download_button = soup.find('a', {'id': 'downloadButton'})
-            if download_button:
-                frfr = download_button.get('href')
-                return frfr
-            else:
-                return None
+            return download_button.get('href') if download_button else None
         else:
-            return None
+            raise Exception("Failed to fetch MediaFire page.")
     except Exception as e:
-        print(f'Error: {e}')
-        return None
+        raise Exception(f"Error fetching MediaFire URL. Error: {e}")
 
-@app.route("/")
-def home():
-    return jsonify({"message": "Invalid Endpoint"})
-
-@app.route("/api/fluxus")
-def fluxus():
-    url = request.args.get("url")
-    if url and url.startswith("https://flux.li/android/external/start.php?HWID="):
-        try:
-            content, time_taken = bypass_link(url)
-            return jsonify({"key": content, "time_taken": time_taken, "credit": "FeliciaXxx"})
-        except Exception as e:
-            return jsonify({"error": str(e)}), 500
-    else:
-        return jsonify({"message": "Please Enter Fluxus Link!"})
-
-@app.route('/api/paste', methods=['GET'])
-def paste_drop():
+# Unified route for all bypasses
+@app.route('/bypass', methods=['GET'])
+def bypass():
+    service = request.args.get('service')
     url = request.args.get('url')
-    if not url:
-        return jsonify({"status": "fail", "message": "URL parameter is missing"}), 400
+
+    if not service or not url:
+        return jsonify({"status": "fail", "message": "Missing service or URL parameter"}), 400
 
     try:
-        html_content = get_paste_drop_content(url)
-        parsed_content = parse_html(html_content)
-        if parsed_content:
-            return jsonify({"status": "success", "result": parsed_content}), 200
+        if service == "fluxus":
+            content, time_taken = bypass_fluxus(url)
+            return jsonify({"status": "success", "result": {"key": content, "time_taken": time_taken}})
+        elif service == "pastedrop":
+            content = bypass_paste_drop(url)
+            return jsonify({"status": "success", "result": content}) if content else jsonify({"status": "fail", "message": "Content not found"}), 500
+        elif service == "socialwolvez":
+            extracted_url, extracted_name = bypass_socialwolvez(url)
+            return jsonify({"status": "success", "result": {"url": extracted_url, "name": extracted_name}})
+        elif service == "mboost":
+            target_url = bypass_mboost(url)
+            return jsonify({"status": "success", "result": target_url}) if target_url else jsonify({"status": "fail", "message": "Target URL not found"}), 500
+        elif service == "mediafire":
+            download_url = bypass_mediafire(url)
+            return jsonify({"status": "success", "result": download_url}) if download_url else jsonify({"status": "fail", "message": "Download link not found"}), 500
         else:
-            return jsonify({"status": "fail", "message": "An Error Occurred"}), 500
+            return jsonify({"status": "fail", "message": "Unsupported service"}), 400
     except Exception as e:
         return jsonify({"status": "fail", "message": str(e)}), 500
-
-@app.route('/api/socialwolvez', methods=['GET'])
-def socialwolvez():
-    url = request.args.get('url')
-    
-    if not url:
-        return jsonify({'error': 'Missing parameter: url'}), 400
-
-    try:
-        response = requests.get(url)
-        response.raise_for_status()
-
-        soup = BeautifulSoup(response.text, 'html.parser')
-
-        script_tag = soup.find('script', {'id': '__NUXT_DATA__'})
-        if script_tag and script_tag.string:
-            try:
-                data = json.loads(script_tag.string)
-                
-                extracted_url = data.get(5)
-                extracted_name = data.get(6)
-
-                if extracted_url and extracted_name:
-                    return jsonify({'bypassed_url': extracted_url, 'name': extracted_name})
-                else:
-                    return jsonify({'error': 'Required data not found in the JSON structure.'}), 500
-
-            except (json.JSONDecodeError, KeyError, IndexError) as e:
-                return jsonify({'error': 'Failed to parse JSON data.', 'details': str(e)}), 500
-        else:
-            return jsonify({'error': 'Script tag with JSON data not found.'}), 404
-
-    except requests.RequestException as e:
-        return jsonify({'error': 'Failed to make request to the provided URL.', 'details': str(e)}), 500
-
-@app.route('/api/mboost', methods=['GET'])
-def mboost():
-    url = request.args.get('url')
-    
-    if not url:
-        return jsonify({"result": "No URL provided."})
-    
-    try:
-        response = requests.get(url)
-        response.raise_for_status()
-        html_content = response.text
-    except requests.RequestException as e:
-        return jsonify({"result": f"Error fetching URL: {str(e)}"})
-
-    targeturl_regex = r'"targeturl":\s*"(.*?)"'
-    
-    match = re.search(targeturl_regex, html_content, re.MULTILINE)
-    
-    if match and len(match.groups()) > 0:
-        result = match.group(1)
-        return jsonify({"result": result})
-    else:
-        return jsonify({"result": "Please try again later"})
-
-@app.route('/api/mediafire', methods=['GET'])
-def get_mediafire_link():
-    url = request.args.get('url')
-    if not url:
-        return jsonify({"status": "fail", "message": "URL parameter is missing"}), 400
-
-    frfr = bypass_mediafire(url)
-    if frfr:
-        return jsonify({"status": "success", "result": frfr}), 200
-    else:
-        return jsonify({"status": "fail", "message": "error?"}), 500
-
-@app.route('/supported', methods=['GET'])
-def supported():
-    services = ["fluxus", "pastedrop", "socialwolvez", "mboost", "mediafire"]
-    return jsonify({"supported_services": services})
 
 if __name__ == '__main__':
     app.run(debug=True)
