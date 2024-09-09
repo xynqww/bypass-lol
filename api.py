@@ -10,6 +10,7 @@ app = Flask(__name__)
 # Regular expression for key extraction
 key_regex = r'let content = "([^"]+)";'
 
+# Function to fetch URL with headers
 def fetch(url, headers):
     try:
         response = requests.get(url, headers=headers)
@@ -18,6 +19,7 @@ def fetch(url, headers):
     except requests.exceptions.RequestException as e:
         raise Exception(f"Failed to fetch URL: {url}. Error: {e}")
 
+# Function to bypass a link
 def bypass_link(url):
     try:
         hwid = url.split("HWID=")[-1]
@@ -63,6 +65,7 @@ def bypass_link(url):
     except Exception as e:
         raise Exception(f"Failed to bypass link. Error: {e}")
 
+# Function to get Paste Drop content
 def get_paste_drop_content(url):
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
@@ -74,12 +77,31 @@ def get_paste_drop_content(url):
     else:
         raise Exception(f"Failed to get Paste Drop content. Status Code: {response.status_code}")
 
+# Function to parse HTML
 def parse_html(html_content):
     soup = BeautifulSoup(html_content, 'html.parser')
     content = soup.find('span', id='content')
     if content:
         return content.get_text().replace('\\', '')
     else:
+        return None
+
+# Function to bypass MediaFire
+def bypass_mediafire(url):
+    try:
+        response = requests.get(url)
+        if response.status_code == 200:
+            soup = BeautifulSoup(response.text, 'html.parser')
+            download_button = soup.find('a', {'id': 'downloadButton'})
+            if download_button:
+                frfr = download_button.get('href')
+                return frfr
+            else:
+                return None
+        else:
+            return None
+    except Exception as e:
+        print(f'Error: {e}')
         return None
 
 @app.route("/")
@@ -172,10 +194,21 @@ def mboost():
     else:
         return jsonify({"result": "Please try again later"})
 
-# New /supported route
+@app.route('/api/mediafire', methods=['GET'])
+def get_mediafire_link():
+    url = request.args.get('url')
+    if not url:
+        return jsonify({"status": "fail", "message": "URL parameter is missing"}), 400
+
+    frfr = bypass_mediafire(url)
+    if frfr:
+        return jsonify({"status": "success", "result": frfr}), 200
+    else:
+        return jsonify({"status": "fail", "message": "error?"}), 500
+
 @app.route('/supported', methods=['GET'])
 def supported():
-    services = ["fluxus", "pastedrop", "socialwolvez", "mboost"]
+    services = ["fluxus", "pastedrop", "socialwolvez", "mboost", "mediafire"]
     return jsonify({"supported_services": services})
 
 if __name__ == '__main__':
