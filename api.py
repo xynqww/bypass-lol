@@ -127,34 +127,39 @@ def bypass_mediafire(url):
         raise Exception(f"Error fetching MediaFire URL. Error: {e}")
 
 # Unified route for all bypasses
-@app.route('/bypass', methods=['GET'])
+@app.route('/api/bypass', methods=['GET'])
 def bypass():
-    service = request.args.get('service')
     url = request.args.get('url')
 
-    if not service or not url:
-        return jsonify({"status": "fail", "message": "Missing service or URL parameter"}), 400
+    if not url:
+        return jsonify({"status": "fail", "message": "URL parameter is missing"}), 400
 
     try:
-        if service == "fluxus":
+        # Determine which service the URL belongs to based on its format
+        if "flux.li" in url:
             content, time_taken = bypass_fluxus(url)
             return jsonify({"status": "success", "result": {"key": content, "time_taken": time_taken}})
-        elif service == "pastedrop":
+        elif "paste-drop.com" in url:
             content = bypass_paste_drop(url)
             return jsonify({"status": "success", "result": content}) if content else jsonify({"status": "fail", "message": "Content not found"}), 500
-        elif service == "socialwolvez":
+        elif "socialwolvez.com" in url:
             extracted_url, extracted_name = bypass_socialwolvez(url)
             return jsonify({"status": "success", "result": {"url": extracted_url, "name": extracted_name}})
-        elif service == "mboost":
+        elif "mboost.me" in url:
             target_url = bypass_mboost(url)
             return jsonify({"status": "success", "result": target_url}) if target_url else jsonify({"status": "fail", "message": "Target URL not found"}), 500
-        elif service == "mediafire":
+        elif "mediafire.com" in url:
             download_url = bypass_mediafire(url)
             return jsonify({"status": "success", "result": download_url}) if download_url else jsonify({"status": "fail", "message": "Download link not found"}), 500
         else:
             return jsonify({"status": "fail", "message": "Unsupported service"}), 400
     except Exception as e:
         return jsonify({"status": "fail", "message": str(e)}), 500
+
+@app.route('/supported', methods=['GET'])
+def supported():
+    services = ["fluxus", "pastedrop", "socialwolvez", "mboost", "mediafire"]
+    return jsonify({"supported_services": services})
 
 if __name__ == '__main__':
     app.run(debug=True)
