@@ -10,6 +10,7 @@
     { "src": "/api/mboost", "dest": "api.py" },
     { "src": "/api/mediafire", "dest": "api.py" },
     { "src": "/supported", "dest": "api.py" },
-    { "src": "/", "dest": "/static/index.html" }  // Route for the static homepage
+    { "src": "/static/(.*)", "dest": "/static/$1" },  // Route for static files
+    { "src": "/", "dest": "/static/index.html" }    // Default route to serve index.html
   ]
 }
