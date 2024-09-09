@@ -11,6 +11,7 @@
     { "src": "/api/mediafire", "dest": "api.py" },
     { "src": "/supported", "dest": "api.py" },
     { "src": "/static/(.*)", "dest": "/static/$1" },
-    { "src": "/", "dest": "/static/index.html" }
+    { "src": "/", "dest": "/static/index.html" },
+    { "src": "/(.*)", "dest": "/static/index.html" }  <!-- Fallback route -->
   ]
 }
