@@ -7,6 +7,7 @@
     { "src": "/api/fluxus", "dest": "api.py" },
     { "src": "/api/paste", "dest": "api.py" },
     { "src": "/api/socialwolvez", "dest": "api.py" },
-    { "src": "/api/mboost", "dest": "api.py" }
+    { "src": "/api/mboost", "dest": "api.py" },
+    { "src": "/supported", "dest": "api.py" }
   ]
 }
