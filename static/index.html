@@ -3,102 +3,155 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome to My Bypass API</title>
+    <title>Welcome to Our Platform</title>
     <style>
-        /* Reset body margin and height */
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
         body {
             margin: 0;
-            height: 100vh;
-            background: linear-gradient(45deg, #00d2ff, #3a7bd5, #00d2ff, #3a7bd5);
-            background-size: 400% 400%;
-            animation: gradient 10s ease infinite;
-            font-family: 'Arial', sans-serif;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
+            font-family: 'Roboto', sans-serif;
+            color: #f1f1f1;
+            text-align: center;
+            overflow-x: hidden;
+            background: linear-gradient(to right, #000000, #434343), url('https://images.unsplash.com/photo-1600275262301-9d5e6f5b82a0?fit=crop&w=1500&h=1000') no-repeat center center fixed;
+            background-size: cover;
+            animation: fadeIn 1s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px;
+            box-sizing: border-box;
+            position: relative;
+            z-index: 1;
+            background: rgba(0, 0, 0, 0.75); /* Darker black for smoothness */
+            border-radius: 15px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.6);
+            animation: slideIn 1s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        header {
+            margin-bottom: 40px;
+        }
+
+        header h1 {
+            font-size: 4em;
+            margin: 0;
+            color: #ffffff;
+            text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.6);
+            animation: fadeIn 1s ease-out;
+        }
+
+        main {
+            padding: 20px;
             text-align: center;
         }
 
-        /* Background animation */
-        @keyframes gradient {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+        .info {
+            margin-bottom: 20px;
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
         }
 
-        /* Styling the container */
-        .container {
-            max-width: 800px;
-            padding: 20px;
-            background-color: rgba(0, 0, 0, 0.5);
-            border-radius: 15px;
+        .info.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
 
-        h1 {
-            font-size: 3rem;
-            margin: 0;
+        h2 {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            color: #ffffff;
         }
 
         p {
-            font-size: 1.2rem;
-            margin-top: 10px;
+            font-size: 1.2em;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            color: #dcdcdc;
         }
 
-        .highlight {
-            color: #00d2ff;
-            font-weight: bold;
+        footer {
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #ffffff;
         }
 
-        /* Adding a subtle animation to the text */
-        h1, p {
-            animation: fadeInUp 2s ease;
+        .welcome-animation {
+            position: relative;
+            display: inline-block;
+            color: #ffffff;
+            font-weight: 700;
         }
 
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .welcome-animation::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            height: 5px;
+            background: #ffffff;
+            transform: scaleX(0);
+            transform-origin: bottom left;
+            transition: transform 0.5s ease-out;
         }
 
-        /* Styling for the list of supported APIs */
-        ul {
-            list-style-type: none;
-            padding: 0;
-            margin-top: 15px;
+        .welcome-animation:hover::before {
+            transform: scaleX(1);
         }
-
-        ul li {
-            font-size: 1.1rem;
-            margin-bottom: 8px;
-        }
-
-        ul li:before {
-            content: "✔";
-            margin-right: 10px;
-            color: #00d2ff;
-        }
-
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Welcome to My Bypass API</h1>
-        <p>Effortlessly bypass links and enjoy fast access to content.</p>
-        <p class="highlight">Currently Supporting:</p>
-        <ul>
-            <li>Fluxus Links</li>
-            <li>MediaFire Links</li>
-            <li>MBoost.me Links</li>
-            <li>Pastebin Links</li>
-            <li>SocialWolvez Links</li>
-        </ul>
-        <p>More services coming soon!</p>
+        <header>
+            <h1 class="welcome-animation">Welcome!</h1>
+        </header>
+        <main>
+            <section class="info">
+                <h2>About Our API</h2>
+                <p>
+                    We are thrilled to have you here! Our API is designed for seamless integration with your applications. It provides various functionalities to enhance your experience, from content bypassing to data retrieval. Explore and enjoy the flexibility and ease our API offers.
+                </p>
+            </section>
+        </main>
+        <footer>
+            <p>&copy; 2024 Our Platform. All rights reserved.</p>
+        </footer>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.1
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.info').forEach(section => {
+                observer.observe(section);
+            });
+        });
+    </script>
 </body>
 </html>
