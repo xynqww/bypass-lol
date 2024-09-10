@@ -5,9 +5,9 @@ import time
 import json
 from bs4 import BeautifulSoup
 
-app = Flask(__name__, static_folder='static')
+app = Flask(__name__, static_folder='public')
 
-# Serve index.html from /static for the root route
+# Serve index.html from /public for the root route
 @app.route('/')
 def serve_ui():
     return send_from_directory(app.static_folder, 'index.html')
