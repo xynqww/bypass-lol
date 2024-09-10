@@ -111,12 +111,10 @@ def bypass_mboost(url):
 def bypass_mediafire(url):
     try:
         response = requests.get(url)
-        if response.status_code == 200:
-            soup = BeautifulSoup(response.text, 'html.parser')
-            download_button = soup.find('a', {'id': 'downloadButton'})
-            return download_button.get('href') if download_button else None
-        else:
-            raise Exception("Failed to fetch MediaFire page.")
+        response.raise_for_status()
+        soup = BeautifulSoup(response.text, 'html.parser')
+        download_button = soup.find('a', {'id': 'downloadButton'})
+        return download_button.get('href') if download_button else None
     except Exception as e:
         raise Exception(f"Error fetching MediaFire URL. Error: {e}")
 
@@ -134,16 +132,25 @@ def bypass():
             return jsonify({"status": "success", "result": {"key": content, "time_taken": time_taken}})
         elif "paste-drop.com" in url:
             content = bypass_paste_drop(url)
-            return jsonify({"status": "success", "result": content}) if content else jsonify({"status": "fail", "message": "Content not found"}), 500
+            if content:
+                return jsonify({"status": "success", "result": content})
+            else:
+                return jsonify({"status": "fail", "message": "Content not found"}), 404
         elif "socialwolvez.com" in url:
             extracted_url, extracted_name = bypass_socialwolvez(url)
             return jsonify({"status": "success", "result": {"url": extracted_url, "name": extracted_name}})
         elif "mboost.me" in url:
             target_url = bypass_mboost(url)
-            return jsonify({"status": "success", "result": target_url}) if target_url else jsonify({"status": "fail", "message": "Target URL not found"}), 500
+            if target_url:
+                return jsonify({"status": "success", "result": target_url})
+            else:
+                return jsonify({"status": "fail", "message": "Target URL not found"}), 404
         elif "mediafire.com" in url:
             download_url = bypass_mediafire(url)
-            return jsonify({"status": "success", "result": download_url}) if download_url else jsonify({"status": "fail", "message": "Download link not found"}), 500
+            if download_url:
+                return jsonify({"status": "success", "result": download_url})
+            else:
+                return jsonify({"status": "fail", "message": "Download link not found"}), 404
         else:
             return jsonify({"status": "fail", "message": "Unsupported service"}), 400
     except Exception as e:
