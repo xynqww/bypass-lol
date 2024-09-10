@@ -6,6 +6,6 @@
   "routes": [
     { "src": "/api/bypass", "dest": "api.py" },
     { "src": "/supported", "dest": "api.py" },
-    { "src": "/", "dest": "/static/index.html" }
+    { "src": "/(.*)", "dest": "/static/index.html" }
   ]
 }
