@@ -1,7 +1,7 @@
 {
   "routes": [
     { "src": "/", "dest": "/public/index.html" },
-    { "src": "/api/bypass", "dest": "/api.py" },
+    { "src": "/api/(.*)", "dest": "/api.py" },
     { "src": "/supported", "dest": "/api.py" }
   ]
 }
