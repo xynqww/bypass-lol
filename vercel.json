@@ -4,9 +4,8 @@
     { "src": "api.py", "use": "@vercel/python" }
   ],
   "routes": [
-    { "src": "/api/bypass", "dest": "api.py" },
-    { "src": "/supported", "dest": "api.py" },
-    { "src": "/static/(.*)", "dest": "/public/$1" },
+    { "src": "/api/(.*)", "dest": "/api.py" },
+    { "src": "/(.*)", "dest": "/public/$1" },
     { "src": "/", "dest": "/public/index.html" }
   ]
 }
