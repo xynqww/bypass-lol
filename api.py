@@ -169,10 +169,5 @@ def bypass():
         print(f"Exception in bypass function: {e}")
         return jsonify({"status": "fail", "message": str(e)}), 500
 
-@app.route('/supported', methods=['GET'])
-def supported():
-    services = ["fluxus", "pastedrop", "socialwolvez", "mboost", "mediafire"]
-    return jsonify({"supported_services": services})
-
 if __name__ == '__main__':
     app.run(debug=True)
