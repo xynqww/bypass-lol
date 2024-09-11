@@ -22,7 +22,8 @@ def fetch(url, headers):
         response.raise_for_status()
         return response.text
     except requests.exceptions.RequestException as e:
-        raise Exception(f"Failed to fetch URL: {url}. Error: {e}")
+        print(f"Failed to fetch URL: {url}. Error: {e}")
+        raise
 
 # Function to bypass a Fluxus link
 def bypass_fluxus(url):
@@ -51,14 +52,14 @@ def bypass_fluxus(url):
             }
             print(f"Fetching URL: {url}")  # Added logging
             response_text = fetch(url, headers)
-            if endpoint == endpoints[-1]:
+            if endpoint == endpoints[-1]:  # Check only the last endpoint
                 match = re.search(key_regex, response_text)
                 if match:
                     end_time = time.time()
                     time_taken = end_time - start_time
                     return match.group(1), time_taken
                 else:
-                    raise Exception("Failed to find content key")
+                    raise Exception("Failed to find content key in response")
     except Exception as e:
         print(f"Failed to bypass Fluxus link. Error: {e}")  # Added logging
         raise
@@ -76,7 +77,8 @@ def bypass_paste_drop(url):
         content = soup.find('span', id='content')
         return content.get_text().replace('\\', '') if content else None
     except Exception as e:
-        raise Exception(f"Failed to get Paste Drop content. Error: {e}")
+        print(f"Failed to get Paste Drop content. Error: {e}")
+        raise
 
 # Function to bypass SocialWolvez
 def bypass_socialwolvez(url):
@@ -96,7 +98,8 @@ def bypass_socialwolvez(url):
         else:
             raise Exception("Script tag with JSON data not found.")
     except requests.RequestException as e:
-        raise Exception(f"Failed to make request to the provided URL. Error: {e}")
+        print(f"Failed to make request to the provided URL. Error: {e}")
+        raise
 
 # Function to bypass MBoost
 def bypass_mboost(url):
@@ -107,7 +110,8 @@ def bypass_mboost(url):
         match = re.search(targeturl_regex, response.text, re.MULTILINE)
         return match.group(1) if match else None
     except requests.RequestException as e:
-        raise Exception(f"Error fetching MBoost URL. Error: {e}")
+        print(f"Error fetching MBoost URL. Error: {e}")
+        raise
 
 # Function to bypass MediaFire
 def bypass_mediafire(url):
@@ -118,7 +122,8 @@ def bypass_mediafire(url):
         download_button = soup.find('a', {'id': 'downloadButton'})
         return download_button.get('href') if download_button else None
     except Exception as e:
-        raise Exception(f"Error fetching MediaFire URL. Error: {e}")
+        print(f"Error fetching MediaFire URL. Error: {e}")
+        raise
 
 # Unified route for all bypasses
 @app.route('/api/bypass', methods=['GET'])
