@@ -49,6 +49,7 @@ def bypass_fluxus(url):
                 'Referer': referer,
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
             }
+            print(f"Fetching URL: {url}")  # Added logging
             response_text = fetch(url, headers)
             if endpoint == endpoints[-1]:
                 match = re.search(key_regex, response_text)
@@ -59,7 +60,8 @@ def bypass_fluxus(url):
                 else:
                     raise Exception("Failed to find content key")
     except Exception as e:
-        raise Exception(f"Failed to bypass Fluxus link. Error: {e}")
+        print(f"Failed to bypass Fluxus link. Error: {e}")  # Added logging
+        raise
 
 # Function to get Paste Drop content
 def bypass_paste_drop(url):
@@ -154,6 +156,7 @@ def bypass():
         else:
             return jsonify({"status": "fail", "message": "Unsupported service"}), 400
     except Exception as e:
+        print(f"Exception in bypass function: {e}")  # Added logging
         return jsonify({"status": "fail", "message": str(e)}), 500
 
 @app.route('/supported', methods=['GET'])
