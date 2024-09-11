@@ -7,15 +7,12 @@ from bs4 import BeautifulSoup
 
 app = Flask(__name__, static_folder='public')
 
-# Serve index.html from /static for the root route
 @app.route('/')
 def serve_ui():
     return send_from_directory(app.static_folder, 'index.html')
 
-# Regular expression for key extraction
-key_regex = r'let content = "([^"]+)"'
+key_regex = r'let content = "([^"]+)";'
 
-# Function to fetch URL with headers
 def fetch(url, headers):
     try:
         response = requests.get(url, headers=headers)
@@ -25,7 +22,6 @@ def fetch(url, headers):
         print(f"Failed to fetch URL: {url}. Error: {e}")
         raise
 
-# Function to bypass a Fluxus link
 def bypass_fluxus(url):
     try:
         hwid = url.split("HWID=")[-1]
@@ -39,7 +35,6 @@ def bypass_fluxus(url):
             {"url": "https://flux.li/android/external/main.php?hash=PLACEHOLDER_HASH", "referer": "https://linkvertise.com"}
         ]
 
-        # Fetch the first endpoint to get the actual hash
         first_response_text = fetch(endpoints[0]["url"], {
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
             'Accept-Language': 'en-US,en;q=0.5',
@@ -48,10 +43,9 @@ def bypass_fluxus(url):
             'Referer': endpoints[0]["referer"],
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
         })
-        print(f"First endpoint response: {first_response_text[:500]}")  # Log a snippet
+        print(f"First endpoint response: {first_response_text[:500]}")
 
-        # Update the URL for subsequent requests with the actual hash if needed
-        hash_value = "actual_hash"  # Replace this with logic to extract the hash if required
+        hash_value = "actual_hash"
 
         for endpoint in endpoints[1:]:
             url = endpoint["url"].replace("PLACEHOLDER_HASH", hash_value)
@@ -64,11 +58,11 @@ def bypass_fluxus(url):
                 'Referer': referer,
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
             }
-            print(f"Fetching URL: {url}")  # Logging URL being fetched
+            print(f"Fetching URL: {url}")
             response_text = fetch(url, headers)
-            print(f"Response from URL {url}: {response_text[:500]}")  # Log a snippet of the response for debugging
+            print(f"Response from URL {url}: {response_text[:500]}")
 
-            if endpoint == endpoints[-1]:  # Check only the last endpoint
+            if endpoint == endpoints[-1]:
                 match = re.search(key_regex, response_text)
                 if match:
                     end_time = time.time()
@@ -77,10 +71,9 @@ def bypass_fluxus(url):
                 else:
                     raise Exception("Failed to find content key in response")
     except Exception as e:
-        print(f"Failed to bypass Fluxus link. Error: {e}")  # Added logging
+        print(f"Failed to bypass Fluxus link. Error: {e}")
         raise
 
-# Function to get Paste Drop content
 def bypass_paste_drop(url):
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
@@ -96,7 +89,6 @@ def bypass_paste_drop(url):
         print(f"Failed to get Paste Drop content. Error: {e}")
         raise
 
-# Function to bypass SocialWolvez
 def bypass_socialwolvez(url):
     try:
         response = requests.get(url)
@@ -117,7 +109,6 @@ def bypass_socialwolvez(url):
         print(f"Failed to make request to the provided URL. Error: {e}")
         raise
 
-# Function to bypass MBoost
 def bypass_mboost(url):
     try:
         response = requests.get(url)
@@ -129,7 +120,6 @@ def bypass_mboost(url):
         print(f"Error fetching MBoost URL. Error: {e}")
         raise
 
-# Function to bypass MediaFire
 def bypass_mediafire(url):
     try:
         response = requests.get(url)
@@ -141,7 +131,6 @@ def bypass_mediafire(url):
         print(f"Error fetching MediaFire URL. Error: {e}")
         raise
 
-# Unified route for all bypasses
 @app.route('/api/bypass', methods=['GET'])
 def bypass():
     url = request.args.get('url')
@@ -177,7 +166,7 @@ def bypass():
         else:
             return jsonify({"status": "fail", "message": "Unsupported service"}), 400
     except Exception as e:
-        print(f"Exception in bypass function: {e}")  # Added logging
+        print(f"Exception in bypass function: {e}")
         return jsonify({"status": "fail", "message": str(e)}), 500
 
 @app.route('/supported', methods=['GET'])
