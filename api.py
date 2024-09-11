@@ -35,12 +35,26 @@ def bypass_fluxus(url):
         start_time = time.time()
         endpoints = [
             {"url": f"https://flux.li/android/external/start.php?HWID={hwid}", "referer": ""},
-            {"url": "https://flux.li/android/external/check1.php?hash={hash}", "referer": "https://linkvertise.com"},
-            {"url": "https://flux.li/android/external/main.php?hash={hash}", "referer": "https://linkvertise.com"}
+            {"url": "https://flux.li/android/external/check1.php?hash=PLACEHOLDER_HASH", "referer": "https://linkvertise.com"},
+            {"url": "https://flux.li/android/external/main.php?hash=PLACEHOLDER_HASH", "referer": "https://linkvertise.com"}
         ]
 
-        for endpoint in endpoints:
-            url = endpoint["url"]
+        # Fetch the first endpoint to get the actual hash
+        first_response_text = fetch(endpoints[0]["url"], {
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5',
+            'DNT': '1',
+            'Connection': 'close',
+            'Referer': endpoints[0]["referer"],
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
+        })
+        print(f"First endpoint response: {first_response_text[:500]}")  # Log a snippet
+
+        # Update the URL for subsequent requests with the actual hash if needed
+        hash_value = "actual_hash"  # Replace this with logic to extract the hash if required
+
+        for endpoint in endpoints[1:]:
+            url = endpoint["url"].replace("PLACEHOLDER_HASH", hash_value)
             referer = endpoint["referer"]
             headers = {
                 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
@@ -50,8 +64,10 @@ def bypass_fluxus(url):
                 'Referer': referer,
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
             }
-            print(f"Fetching URL: {url}")  # Added logging
+            print(f"Fetching URL: {url}")  # Logging URL being fetched
             response_text = fetch(url, headers)
+            print(f"Response from URL {url}: {response_text[:500]}")  # Log a snippet of the response for debugging
+
             if endpoint == endpoints[-1]:  # Check only the last endpoint
                 match = re.search(key_regex, response_text)
                 if match:
