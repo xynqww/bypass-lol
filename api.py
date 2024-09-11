@@ -43,9 +43,8 @@ def bypass_fluxus(url):
             'Referer': endpoints[0]["referer"],
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
         })
-        print(f"First endpoint response: {first_response_text[:500]}")
 
-        hash_value = "actual_hash"
+        hash_value = "actual_hash"  # This should be extracted dynamically if required
 
         for endpoint in endpoints[1:]:
             url = endpoint["url"].replace("PLACEHOLDER_HASH", hash_value)
@@ -58,9 +57,7 @@ def bypass_fluxus(url):
                 'Referer': referer,
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
             }
-            print(f"Fetching URL: {url}")
             response_text = fetch(url, headers)
-            print(f"Response from URL {url}: {response_text[:500]}")
 
             if endpoint == endpoints[-1]:
                 match = re.search(key_regex, response_text)
