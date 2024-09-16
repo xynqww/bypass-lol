@@ -2,12 +2,8 @@ from flask import Flask, request, jsonify
 import re
 import requests
 import time
-import logging
 
 app = Flask(__name__)
-
-# Configure logging
-logging.basicConfig(level=logging.DEBUG)
 
 # Correct regex pattern for the content key
 key_regex = r'let content = "([^"]+)";'
@@ -18,15 +14,13 @@ def fetch(url, headers):
         response.raise_for_status()
         return response.text
     except requests.exceptions.RequestException as e:
-        logging.error(f"Failed to fetch URL: {url}. Error: {e}")
-        raise
+        return None
 
 def bypass_link(url):
-    logging.debug(f"Bypassing link: {url}")
     try:
         hwid = url.split("HWID=")[-1]
         if not hwid:
-            raise ValueError("Invalid HWID in URL")
+            return None, "Invalid HWID in URL"
 
         start_time = time.time()
         endpoints = [
@@ -56,7 +50,8 @@ def bypass_link(url):
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
             }
             response_text = fetch(url, headers)
-            logging.debug(f"Response from {url}: {response_text[:2000]}")  # Log part of the response
+            if response_text is None:
+                return None, "Failed to fetch URL"
 
             if i == len(endpoints) - 1:
                 match = re.search(key_regex, response_text)
@@ -65,11 +60,9 @@ def bypass_link(url):
                     time_taken = end_time - start_time
                     return match.group(1), time_taken
                 else:
-                    logging.error("Failed to find content key with regex")
-                    raise ValueError("Failed to find content key")
+                    return None, "Failed to find content key"
     except Exception as e:
-        logging.error(f"Failed to bypass link. Error: {e}")
-        raise
+        return None, str(e)
 
 @app.route("/")
 def home():
@@ -79,14 +72,13 @@ def home():
 def bypass():
     url = request.args.get("url")
     if url and url.startswith("https://flux.li/android/external/start.php?HWID="):
-        try:
-            content, time_taken = bypass_link(url)
-            return jsonify({"key": content, "time_taken": time_taken, "credit": "FeliciaXxx"})
-        except Exception as e:
-            logging.error(f"Exception occurred: {e}")
-            return jsonify({"error": str(e)}), 500
+        content, error = bypass_link(url)
+        if content:
+            return jsonify({"key": content, "time_taken": error, "credit": "FeliciaXxx"})
+        else:
+            return jsonify({"error": error}), 500
     else:
         return jsonify({"message": "Please Enter Fluxus Link!"})
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()
