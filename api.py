@@ -7,9 +7,8 @@ import logging
 app = Flask(__name__)
 
 # Configure logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
-# Updated regex pattern for the content key
 key_regex = r'let content = "([^"]+)";'
 
 def fetch(url, headers):
