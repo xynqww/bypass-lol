@@ -1,10 +1,15 @@
 {
   "version": 2,
   "builds": [
-    { "src": "api.py", "use": "@vercel/python" }
+    {
+      "src": "api.py",
+      "use": "@vercel/python"
+    }
   ],
   "routes": [
-    { "src": "/api/bypass", "dest": "/api.py" },
-    { "src": "/supported", "dest": "/api.py" }
+    {
+      "src": "/api/fluxus",
+      "dest": "/api.py"
+    }
   ]
 }
