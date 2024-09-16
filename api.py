@@ -5,6 +5,7 @@ import time
 
 app = Flask(__name__)
 
+# Updated regex pattern to match the expected format of the content key
 key_regex = r'let content = "([^"]+)";'
 
 def fetch(url, headers):
@@ -37,7 +38,7 @@ def bypass_link(url):
             }
         ]
 
-        for endpoint in endpoints:
+        for i, endpoint in enumerate(endpoints):
             url = endpoint["url"]
             referer = endpoint["referer"]
             headers = {
@@ -49,7 +50,8 @@ def bypass_link(url):
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x66) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
             }
             response_text = fetch(url, headers)
-            if endpoint == endpoints[-1]:
+            # Log part of the response to aid in debugging
+            if i == len(endpoints) - 1:
                 match = re.search(key_regex, response_text)
                 if match:
                     end_time = time.time()
@@ -67,7 +69,7 @@ def home():
 @app.route("/api/fluxus")
 def bypass():
     url = request.args.get("url")
-    if url.startswith("https://flux.li/android/external/start.php?HWID="):
+    if url and url.startswith("https://flux.li/android/external/start.php?HWID="):
         try:
             content, time_taken = bypass_link(url)
             return jsonify({"key": content, "time_taken": time_taken, "credit": "FeliciaXxx"})
@@ -75,3 +77,6 @@ def bypass():
             return jsonify({"error": str(e)}), 500
     else:
         return jsonify({"message": "Please Enter Fluxus Link!"})
+
+if __name__ == "__main__":
+    app.run()
