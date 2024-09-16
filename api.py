@@ -7,12 +7,12 @@ import logging
 app = Flask(__name__)
 
 # Configure logging
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.DEBUG)
 
+# Correct regex pattern for the content key
 key_regex = r'let content = "([^"]+)";'
 
 def fetch(url, headers):
-    logging.debug(f"Fetching URL: {url}")
     try:
         response = requests.get(url, headers=headers)
         response.raise_for_status()
@@ -56,7 +56,7 @@ def bypass_link(url):
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
             }
             response_text = fetch(url, headers)
-            logging.debug(f"Response from {url}: {response_text[:1000]}")  # Log part of the response
+            logging.debug(f"Response from {url}: {response_text[:2000]}")  # Log part of the response
 
             if i == len(endpoints) - 1:
                 match = re.search(key_regex, response_text)
@@ -83,7 +83,7 @@ def bypass():
             content, time_taken = bypass_link(url)
             return jsonify({"key": content, "time_taken": time_taken, "credit": "FeliciaXxx"})
         except Exception as e:
-            logging.error(f"Error in bypass route: {e}")
+            logging.error(f"Exception occurred: {e}")
             return jsonify({"error": str(e)}), 500
     else:
         return jsonify({"message": "Please Enter Fluxus Link!"})
