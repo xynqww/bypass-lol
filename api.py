@@ -7,9 +7,11 @@ from bs4 import BeautifulSoup
 
 app = Flask(__name__)
 
+# Regular expression for matching the content key in the final response
 key_regex = r'let content = "([^"]+)";'
 
 def fetch(url, headers):
+    """Fetch the content of a given URL with specified headers."""
     try:
         response = requests.get(url, headers=headers)
         response.raise_for_status()
@@ -19,18 +21,23 @@ def fetch(url, headers):
         raise
 
 def bypass_fluxus(url):
+    """Bypass the Fluxus URL protection."""
     try:
+        # Extract HWID from the provided URL
         hwid = url.split("HWID=")[-1]
         if not hwid:
             raise Exception("Invalid HWID in URL")
 
         start_time = time.time()
+
+        # Endpoint URLs used during the bypass process
         endpoints = [
             {"url": f"https://flux.li/android/external/start.php?HWID={hwid}", "referer": ""},
             {"url": "https://flux.li/android/external/check1.php?hash=PLACEHOLDER_HASH", "referer": "https://linkvertise.com"},
             {"url": "https://flux.li/android/external/main.php?hash=PLACEHOLDER_HASH", "referer": "https://linkvertise.com"}
         ]
 
+        # Fetch the first response (initial HWID request)
         first_response_text = fetch(endpoints[0]["url"], {
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
             'Accept-Language': 'en-US,en;q=0.5',
@@ -40,8 +47,15 @@ def bypass_fluxus(url):
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
         })
 
-        hash_value = "actual_hash"  # This should be extracted dynamically if required
+        # Attempt to extract the hash dynamically from the first response
+        hash_match = re.search(r'"hash":"([^"]+)"', first_response_text)
+        if hash_match:
+            hash_value = hash_match.group(1)
+            print(f"Extracted hash: {hash_value}")
+        else:
+            raise Exception("Failed to extract hash from the first response")
 
+        # Continue with the remaining requests using the extracted hash
         for endpoint in endpoints[1:]:
             url = endpoint["url"].replace("PLACEHOLDER_HASH", hash_value)
             referer = endpoint["referer"]
@@ -56,18 +70,21 @@ def bypass_fluxus(url):
             response_text = fetch(url, headers)
 
             if endpoint == endpoints[-1]:
+                # Search for the content key in the final response
                 match = re.search(key_regex, response_text)
                 if match:
                     end_time = time.time()
                     time_taken = end_time - start_time
                     return match.group(1), time_taken
                 else:
-                    raise Exception("Failed to find content key in response")
+                    raise Exception("Failed to find content key in the final response")
+
     except Exception as e:
         print(f"Failed to bypass Fluxus link. Error: {e}")
         raise
 
 def bypass_paste_drop(url):
+    """Bypass Paste-Drop URL protection."""
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
         'Referer': 'https://paste-drop.com/'
@@ -83,6 +100,7 @@ def bypass_paste_drop(url):
         raise
 
 def bypass_socialwolvez(url):
+    """Bypass SocialWolvez URL protection."""
     try:
         response = requests.get(url)
         response.raise_for_status()
@@ -103,6 +121,7 @@ def bypass_socialwolvez(url):
         raise
 
 def bypass_mboost(url):
+    """Bypass MBoost URL protection."""
     try:
         response = requests.get(url)
         response.raise_for_status()
@@ -114,6 +133,7 @@ def bypass_mboost(url):
         raise
 
 def bypass_mediafire(url):
+    """Bypass MediaFire URL protection."""
     try:
         response = requests.get(url)
         response.raise_for_status()
@@ -126,6 +146,7 @@ def bypass_mediafire(url):
 
 @app.route('/api/bypass', methods=['GET'])
 def bypass():
+    """API endpoint for bypassing different types of URL protections."""
     url = request.args.get('url')
 
     if not url:
