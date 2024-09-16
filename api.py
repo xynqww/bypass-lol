@@ -9,7 +9,7 @@ app = Flask(__name__)
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 
-# Updated regex pattern to match the expected format of the content key
+# Regex pattern to match the expected format of the content key
 key_regex = r'let content = "([^"]+)";'
 
 def fetch(url, headers):
@@ -19,7 +19,7 @@ def fetch(url, headers):
         return response.text
     except requests.exceptions.RequestException as e:
         logging.error(f"Failed to fetch URL: {url}. Error: {e}")
-        raise Exception(f"Failed to fetch URL: {url}. Error: {e}")
+        raise
 
 def bypass_link(url):
     try:
@@ -69,7 +69,7 @@ def bypass_link(url):
                     raise Exception("Failed to find content key")
     except Exception as e:
         logging.error(f"Failed to bypass link. Error: {e}")
-        raise Exception(f"Failed to bypass link. Error: {e}")
+        raise
 
 @app.route("/")
 def home():
