@@ -1,15 +1,11 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify
 import re
 import requests
 import time
 import json
 from bs4 import BeautifulSoup
 
-app = Flask(__name__, static_folder='public')
-
-@app.route('/')
-def serve_ui():
-    return send_from_directory(app.static_folder, 'index.html')
+app = Flask(__name__)
 
 key_regex = r'let content = "([^"]+)";'
 
