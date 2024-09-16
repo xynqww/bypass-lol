@@ -9,6 +9,7 @@ app = Flask(__name__)
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 
+# Updated regex pattern for the content key
 key_regex = r'let content = "([^"]+)";'
 
 def fetch(url, headers):
@@ -53,10 +54,10 @@ def bypass_link(url):
                 'DNT': '1',
                 'Connection': 'close',
                 'Referer': referer,
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x66) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
             }
             response_text = fetch(url, headers)
-            logging.debug(f"Response from {url}: {response_text[:1000]}")
+            logging.debug(f"Response from {url}: {response_text[:1000]}")  # Log part of the response
 
             if i == len(endpoints) - 1:
                 match = re.search(key_regex, response_text)
