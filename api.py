@@ -2,10 +2,13 @@ from flask import Flask, request, jsonify
 import re
 import requests
 import time
+import logging
 
 app = Flask(__name__)
 
-# Updated regex pattern to match the expected format of the content key
+# Configure logging
+logging.basicConfig(level=logging.DEBUG)
+
 key_regex = r'let content = "([^"]+)";'
 
 def fetch(url, headers):
@@ -14,6 +17,7 @@ def fetch(url, headers):
         response.raise_for_status()
         return response.text
     except requests.exceptions.RequestException as e:
+        logging.error(f"Failed to fetch URL: {url}. Error: {e}")
         raise Exception(f"Failed to fetch URL: {url}. Error: {e}")
 
 def bypass_link(url):
@@ -49,8 +53,9 @@ def bypass_link(url):
                 'Referer': referer,
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x66) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
             }
+            logging.debug(f"Fetching URL: {url}")
             response_text = fetch(url, headers)
-            # Log part of the response to aid in debugging
+            logging.debug(f"Response from {url}: {response_text[:1000]}")  # Log part of the response
             if i == len(endpoints) - 1:
                 match = re.search(key_regex, response_text)
                 if match:
@@ -60,6 +65,7 @@ def bypass_link(url):
                 else:
                     raise Exception("Failed to find content key")
     except Exception as e:
+        logging.error(f"Failed to bypass link. Error: {e}")
         raise Exception(f"Failed to bypass link. Error: {e}")
 
 @app.route("/")
@@ -79,4 +85,4 @@ def bypass():
         return jsonify({"message": "Please Enter Fluxus Link!"})
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
