@@ -9,10 +9,10 @@ app = Flask(__name__)
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 
-# Regex pattern to match the expected format of the content key
 key_regex = r'let content = "([^"]+)";'
 
 def fetch(url, headers):
+    logging.debug(f"Fetching URL: {url}")
     try:
         response = requests.get(url, headers=headers)
         response.raise_for_status()
@@ -22,10 +22,11 @@ def fetch(url, headers):
         raise
 
 def bypass_link(url):
+    logging.debug(f"Bypassing link: {url}")
     try:
         hwid = url.split("HWID=")[-1]
         if not hwid:
-            raise Exception("Invalid HWID in URL")
+            raise ValueError("Invalid HWID in URL")
 
         start_time = time.time()
         endpoints = [
@@ -54,9 +55,8 @@ def bypass_link(url):
                 'Referer': referer,
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x66) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
             }
-            logging.debug(f"Fetching URL: {url}")
             response_text = fetch(url, headers)
-            logging.debug(f"Response from {url}: {response_text[:1000]}")  # Log part of the response
+            logging.debug(f"Response from {url}: {response_text[:1000]}")
 
             if i == len(endpoints) - 1:
                 match = re.search(key_regex, response_text)
@@ -66,7 +66,7 @@ def bypass_link(url):
                     return match.group(1), time_taken
                 else:
                     logging.error("Failed to find content key with regex")
-                    raise Exception("Failed to find content key")
+                    raise ValueError("Failed to find content key")
     except Exception as e:
         logging.error(f"Failed to bypass link. Error: {e}")
         raise
