@@ -7,7 +7,7 @@ import logging
 app = Flask(__name__)
 logging.basicConfig(level=logging.INFO)
 
-# Adjust the regex pattern based on the actual response format
+# Updated regex pattern for key extraction
 key_regex = r'let content = "([^"]+)";'
 
 def fetch(url, headers):
@@ -55,12 +55,11 @@ def bypass_link(url):
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
             }
             response_text = fetch(url, headers)
-            logging.info(f"Response from endpoint {i+1}: {response_text[:2000]}")  # Log first 2000 chars of response
+            logging.info(f"Response from endpoint {i+1}: {response_text[:500]}")  # Log first 500 chars of response
 
             # Only process response from the last endpoint
             if i == len(endpoints) - 1:
                 match = re.search(key_regex, response_text)
-                logging.info(f"Regex match result: {match}")
                 if match:
                     end_time = time.time()
                     time_taken = end_time - start_time
