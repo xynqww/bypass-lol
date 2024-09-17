@@ -1,20 +1,21 @@
-import logging
-import requests
-import re
-import time
 from flask import Flask, request, jsonify
+import re
+import requests
+import time
+import logging
 
 app = Flask(__name__)
 logging.basicConfig(level=logging.INFO)
 
-key_regex = r'let content = "([^"]+)";'
+# Adjust the regex pattern based on the actual response format
+key_regex = r'let content = "([^"]+)";'
 
 def fetch(url, headers):
     try:
         logging.info(f"Fetching URL: {url}")
         response = requests.get(url, headers=headers)
         response.raise_for_status()
-        logging.info(f"Received response from {url}: {response.text[:1000]}")  # Log first 1000 chars of response
+        logging.info(f"Received response from {url}")
         return response.text
     except requests.exceptions.RequestException as e:
         logging.error(f"Failed to fetch URL: {url}. Error: {e}")
@@ -54,11 +55,12 @@ def bypass_link(url):
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
             }
             response_text = fetch(url, headers)
-            logging.info(f"Response from endpoint {i+1}: {response_text[:1000]}")  # Log first 1000 chars of response
+            logging.info(f"Response from endpoint {i+1}: {response_text[:2000]}")  # Log first 2000 chars of response
 
             # Only process response from the last endpoint
             if i == len(endpoints) - 1:
                 match = re.search(key_regex, response_text)
+                logging.info(f"Regex match result: {match}")
                 if match:
                     end_time = time.time()
                     time_taken = end_time - start_time
