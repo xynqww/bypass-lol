@@ -103,6 +103,3 @@ def bypass():
     else:
         logging.debug("Invalid Fluxus URL provided")
         return jsonify({"message": "Please Enter Fluxus Link!"})
-
-if __name__ == "__main__":
-    app.run(debug=True)
