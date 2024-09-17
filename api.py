@@ -5,7 +5,7 @@ import time
 
 app = Flask(__name__)
 
-key_regex = r'let content = \("([^"]+)"\);'
+key_regex = r'let content = "([^"]+)";'
 
 def fetch(url, headers):
     try:
@@ -62,7 +62,7 @@ def bypass_link(url):
 
 @app.route("/")
 def home():
-    return jsonify({"message": "Invalid Endpoint"})
+    return jsonify({"message": "Welcome to the API endpoint!"})
 
 @app.route("/api/fluxus")
 def bypass():
