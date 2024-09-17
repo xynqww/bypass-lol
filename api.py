@@ -2,17 +2,21 @@ from flask import Flask, request, jsonify
 import re
 import requests
 import time
+import logging
 
 app = Flask(__name__)
+logging.basicConfig(level=logging.INFO)
 
 key_regex = r'let content = "([^"]+)";'
 
 def fetch(url, headers):
     try:
+        logging.info(f"Fetching URL: {url}")
         response = requests.get(url, headers=headers)
         response.raise_for_status()
         return response.text
     except requests.exceptions.RequestException as e:
+        logging.error(f"Failed to fetch URL: {url}. Error: {e}")
         raise Exception(f"Failed to fetch URL: {url}. Error: {e}")
 
 def bypass_link(url):
@@ -46,7 +50,7 @@ def bypass_link(url):
                 'DNT': '1',
                 'Connection': 'close',
                 'Referer': referer,
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x66) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
             }
             response_text = fetch(url, headers)
             if endpoint == endpoints[-1]:
@@ -58,6 +62,7 @@ def bypass_link(url):
                 else:
                     raise Exception("Failed to find content key")
     except Exception as e:
+        logging.error(f"Failed to bypass link. Error: {e}")
         raise Exception(f"Failed to bypass link. Error: {e}")
 
 @app.route("/")
@@ -67,7 +72,7 @@ def home():
 @app.route("/api/fluxus")
 def bypass():
     url = request.args.get("url")
-    if url.startswith("https://flux.li/android/external/start.php?HWID="):
+    if url and url.startswith("https://flux.li/android/external/start.php?HWID="):
         try:
             content, time_taken = bypass_link(url)
             return jsonify({"key": content, "time_taken": time_taken, "credit": "FeliciaXxx"})
@@ -77,4 +82,4 @@ def bypass():
         return jsonify({"message": "Please Enter Fluxus Link!"})
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
