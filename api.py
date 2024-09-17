@@ -14,7 +14,7 @@ def fetch(url, headers):
         logging.info(f"Fetching URL: {url}")
         response = requests.get(url, headers=headers)
         response.raise_for_status()
-        logging.info(f"Received response from {url}: {response.text[:500]}")  # Log first 500 chars of response
+        logging.info(f"Received response from {url}: {response.text[:1000]}")  # Log first 1000 chars of response
         return response.text
     except requests.exceptions.RequestException as e:
         logging.error(f"Failed to fetch URL: {url}. Error: {e}")
@@ -54,7 +54,7 @@ def bypass_link(url):
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
             }
             response_text = fetch(url, headers)
-            logging.info(f"Response from endpoint {i+1}: {response_text[:500]}")  # Log first 500 chars of response
+            logging.info(f"Response from endpoint {i+1}: {response_text[:1000]}")  # Log first 1000 chars of response
 
             # Only process response from the last endpoint
             if i == len(endpoints) - 1:
