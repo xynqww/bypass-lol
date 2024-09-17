@@ -1,64 +1,80 @@
 from flask import Flask, request, jsonify
-import re, requests, time, logging
+import re
+import requests
+import time
 
 app = Flask(__name__)
 
-# Debug logging
-logging.basicConfig(level=logging.DEBUG)
+key_regex = r'let content = \("([^"]+)"\);'
 
-# Regex to match the content key
-key_regex = r'let content = "([^"]+)";'
-
-# Fetch function
 def fetch(url, headers):
     try:
         response = requests.get(url, headers=headers)
         response.raise_for_status()
         return response.text
     except requests.exceptions.RequestException as e:
-        logging.error(f"Error fetching {url}: {e}")
-        return None
+        raise Exception(f"Failed to fetch URL: {url}. Error: {e}")
 
-# Bypass function
 def bypass_link(url):
     try:
         hwid = url.split("HWID=")[-1]
         if not hwid:
-            return None, "Invalid HWID"
+            raise Exception("Invalid HWID in URL")
 
         start_time = time.time()
         endpoints = [
-            {"url": f"https://flux.li/android/external/start.php?HWID={hwid}", "referer": ""},
-            {"url": "https://flux.li/android/external/check1.php?hash={hash}", "referer": "https://linkvertise.com"},
-            {"url": "https://flux.li/android/external/main.php?hash={hash}", "referer": "https://linkvertise.com"}
+            {
+                "url": f"https://flux.li/android/external/start.php?HWID={hwid}",
+                "referer": ""
+            },
+            {
+                "url": "https://flux.li/android/external/check1.php?hash={hash}",
+                "referer": "https://linkvertise.com"
+            },
+            {
+                "url": "https://flux.li/android/external/main.php?hash={hash}",
+                "referer": "https://linkvertise.com"
+            }
         ]
 
-        for i, endpoint in enumerate(endpoints):
-            response_text = fetch(endpoint["url"], {'Referer': endpoint["referer"], 'User-Agent': 'Mozilla'})
-            if response_text is None:
-                return None, "Failed to fetch URL"
-            if i == len(endpoints) - 1:
+        for endpoint in endpoints:
+            url = endpoint["url"]
+            referer = endpoint["referer"]
+            headers = {
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.5',
+                'DNT': '1',
+                'Connection': 'close',
+                'Referer': referer,
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x66) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
+            }
+            response_text = fetch(url, headers)
+            if endpoint == endpoints[-1]:
                 match = re.search(key_regex, response_text)
                 if match:
-                    return match.group(1), time.time() - start_time
+                    end_time = time.time()
+                    time_taken = end_time - start_time
+                    return match.group(1), time_taken
                 else:
-                    return None, "Content key not found"
+                    raise Exception("Failed to find content key")
     except Exception as e:
-        logging.error(f"Error in bypass_link: {e}")
-        return None, str(e)
+        raise Exception(f"Failed to bypass link. Error: {e}")
+
+@app.route("/")
+def home():
+    return jsonify({"message": "Invalid Endpoint"})
 
 @app.route("/api/fluxus")
 def bypass():
     url = request.args.get("url")
-    if url and url.startswith("https://flux.li/android/external/start.php?HWID="):
-        content, error = bypass_link(url)
-        if content:
-            return jsonify({"key": content, "time_taken": error})
-        else:
-            return jsonify({"error": error}), 500
+    if url.startswith("https://flux.li/android/external/start.php?HWID="):
+        try:
+            content, time_taken = bypass_link(url)
+            return jsonify({"key": content, "time_taken": time_taken, "credit": "FeliciaXxx"})
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
     else:
-        return jsonify({"error": "Invalid URL"}), 400
+        return jsonify({"message": "Please Enter Fluxus Link!"})
 
-if __name__ != "__main__":
-    # Ensure this runs on serverless platforms
-    app = app
+if __name__ == "__main__":
+    app.run()
